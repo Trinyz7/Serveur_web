@@ -2,69 +2,118 @@
 
 namespace App\Models;
 
-// Modele de base : c'est la classe mère dont vont hériter TOUS les models
-// Cette classe n'est pas destinée à être instancié, mais seulement à être héritée
-class CoreModel
+// Modèle de base : classe mère de tous les modèles
+// Cette classe factorise les propriétés et méthodes communes à tous les modèles.
+// Elle n'est pas destinée à être instanciée directement.
+abstract class CoreModel
 {
-    // Ici on veut éviter de répéter les propriétés présentes dans tous les Models
-    // On factorise dans la classe "parent" de tous les Models => donc ici meme CoreModel
-    // Les propriétés doivent être en protected car on veut pouvoir les utiliser dans les classe enfant (avant ça, elles etaient en private)
-
+    /**
+     * Propriétés communes à tous les modèles
+     * Ces propriétés correspondent aux colonnes présentes dans toutes les tables de la base de données.
+     */
     protected $id;
     protected $created_at;
     protected $updated_at;
 
+    // ---------------------------------
+    // Getters et Setters
+    // ---------------------------------
+
     /**
-     * Get the value of id
-     */ 
+     * Récupère l'ID de l'objet.
+     *
+     * @return int|null
+     */
     public function getId()
     {
         return $this->id;
     }
 
     /**
-     * Set the value of id
+     * Définit l'ID de l'objet.
      *
-     * @return  self
-     */ 
+     * @param int $id
+     * @return self
+     */
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
     }
 
     /**
-     * Get the value of updated_at
-     */ 
-    public function getUpdated_at()
-    {
-        return $this->updated_at;
-    }
-
-    /**
-     * Set the value of updated_at
+     * Récupère la date de création.
      *
-     * @return  self
-     */ 
-    public function setUpdated_at($updated_at)
-    {
-        $this->updated_at = $updated_at;
-    }
-
-    /**
-     * Get the value of created_at
-     */ 
+     * @return string|null
+     */
     public function getCreated_at()
     {
         return $this->created_at;
     }
 
     /**
-     * Set the value of created_at
+     * Définit la date de création.
      *
-     * @return  self
-     */ 
+     * @param string $created_at
+     * @return self
+     */
     public function setCreated_at($created_at)
     {
         $this->created_at = $created_at;
+        return $this;
     }
+
+    /**
+     * Récupère la date de mise à jour.
+     *
+     * @return string|null
+     */
+    public function getUpdated_at()
+    {
+        return $this->updated_at;
+    }
+
+    /**
+     * Définit la date de mise à jour.
+     *
+     * @param string $updated_at
+     * @return self
+     */
+    public function setUpdated_at($updated_at)
+    {
+        $this->updated_at = $updated_at;
+        return $this;
+    }
+
+    // ---------------------------------
+    // Méthodes génériques communes
+    // ---------------------------------
+
+    /**
+     * Sauvegarde l'objet dans la base de données.
+     * Si l'objet a un ID, il est mis à jour, sinon il est inséré.
+     */
+    public function save()
+    {
+        if ($this->id) {
+            $this->update();
+        } else {
+            $this->insert();
+        }
+    }
+
+    /**
+     * Insère un nouvel objet dans la base de données.
+     */
+    abstract protected function insert();
+
+    /**
+     * Met à jour un objet existant dans la base de données.
+     */
+    abstract protected function update();
+
+    /**
+     * Supprime l'objet de la base de données.
+     */
+    abstract public function delete();
 }

@@ -3,136 +3,154 @@
 namespace App\Models;
 
 use App\Utils\Database;
-use PDO; // on utilise la classe PDO dont le namespace a été défini
+use PDO;
 
 class Category extends CoreModel
 {
     private $name;
     private $subtitle;
     private $picture;
-    private $home_order; // ordre d'affichage des catégories dans la page accueil
+    private $home_order;
 
     /**
-     * Récupère toutes les catégories (table category) depuis la bdd
-     * Retourne une liste d'objet (instances de la classe Category => le model ou on est)
+     * Insère un nouvel enregistrement dans la table `category`.
      */
+    protected function insert()
+    {
+        $sql = "
+            INSERT INTO category (name, subtitle, picture, home_order, created_at, updated_at)
+            VALUES (:name, :subtitle, :picture, :home_order, NOW(), NOW())
+        ";
+
+        $pdo = Database::getPDO();
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->bindValue(':name', $this->name, PDO::PARAM_STR);
+        $stmt->bindValue(':subtitle', $this->subtitle, PDO::PARAM_STR);
+        $stmt->bindValue(':picture', $this->picture, PDO::PARAM_STR);
+        $stmt->bindValue(':home_order', $this->home_order, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            $this->id = $pdo->lastInsertId();
+        }
+    }
+
+
     public function findAll()
-    {
-        $sql = "SELECT * FROM category";
-        $pdo = Database::getPDO();
-        $pdoStatement = $pdo->query($sql);
-        $categories = $pdoStatement->fetchAll(PDO::FETCH_CLASS, Category::class);
+{
+    $sql = "SELECT * FROM category";
+    $pdo = Database::getPDO();
+    $stmt = $pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
+}
 
-        return $categories;
+public function findAllForHomePage()
+{
+    $sql = "SELECT * FROM category WHERE home_order > 0 ORDER BY home_order ASC";
+    $pdo = Database::getPDO();
+    $pdoStatement = $pdo->query($sql);
+
+    return $pdoStatement->fetchAll(PDO::FETCH_CLASS, Category::class);
+}
+
+
+    /**
+     * Met à jour un enregistrement existant dans la table `category`.
+     */
+    protected function update()
+    {
+        $sql = "
+            UPDATE category
+            SET
+                name = :name,
+                subtitle = :subtitle,
+                picture = :picture,
+                home_order = :home_order,
+                updated_at = NOW()
+            WHERE id = :id
+        ";
+
+        $pdo = Database::getPDO();
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->bindValue(':name', $this->name, PDO::PARAM_STR);
+        $stmt->bindValue(':subtitle', $this->subtitle, PDO::PARAM_STR);
+        $stmt->bindValue(':picture', $this->picture, PDO::PARAM_STR);
+        $stmt->bindValue(':home_order', $this->home_order, PDO::PARAM_INT);
+        $stmt->bindValue(':id', $this->id, PDO::PARAM_INT);
+
+        $stmt->execute();
     }
 
     /**
-     * Récupère une seul categorie en fonction de son id
-     * Retourne un objet (une instance de la classe Category => le model ou on est)
+     * Supprime un enregistrement de la table `category` par son ID.
      */
+    public function delete()
+    {
+        $sql = "DELETE FROM category WHERE id = :id";
+
+        $pdo = Database::getPDO();
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Getters et setters pour les propriétés
+
+
     public function find($id)
-    {
-        // Ici on créer la requete SQL qui va récupérer le product en fonction de son id
-        $sql = "SELECT * FROM category WHERE id = ".$id;
+{
+    $sql = "SELECT * FROM category WHERE id = :id";
+    $pdo = Database::getPDO();
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-        // Ici $pdo est un objet de la classe Databse (Utils/Database.php)
-        // $pdo va me permettre d'executer mes requetes sql
-        $pdo = Database::getPDO();
+    return $stmt->fetchObject(Category::class);
+}
 
-        // ici j'execute ma requete sql ($sql) et je stock le resultat de cette requete dans $pdoStatement
-        $pdoStatement = $pdo->query($sql);
 
-        // Je veux récuperer UN objet Product, PDO le fait pour moi => fetchObject (fetch qu'une seule fois + converti en objet de la classe 'Product' donc le model Product)
-        $category = $pdoStatement->fetchObject(Category::class);
-
-        return $category;
-    }
-
-    /**
-     * Récupère toutes les catégories qui ont un home_order > 0 et rangés dans l'ordre de home_order
-     */
-    public function findAllForHomePage()
-    {
-        $sql = "SELECT * FROM category WHERE home_order > 0 ORDER BY home_order";
-        $pdo = Database::getPDO();
-        $pdoStatement = $pdo->query($sql);
-        $categories = $pdoStatement->fetchAll(PDO::FETCH_CLASS, Category::class);
-
-        return $categories;
-    }
-
-    /**
-     * Get the value of name
-     */
     public function getName()
     {
         return $this->name;
     }
 
-
-    /**
-     * Set the value of name
-     *
-     * @return  self
-     */
     public function setName($name)
     {
         $this->name = $name;
+        return $this;
     }
 
-    /**
-     * Get the value of name
-     */
     public function getSubtitle()
     {
         return $this->subtitle;
     }
 
-    /**
-     * Set the value of name
-     *
-     * @return  self
-     */
     public function setSubtitle($subtitle)
     {
         $this->subtitle = $subtitle;
+        return $this;
     }
 
-    /**
-     * Get Picture
-     *
-     * @return void
-     */
     public function getPicture()
     {
         return $this->picture;
     }
 
-    /**
-    * Set the value of picture
-    *
-    * @return self
-    */ 
     public function setPicture($picture)
     {
         $this->picture = $picture;
+        return $this;
     }
 
-    /**
-    * Get the value of home_order
-    */ 
-    public function getHome_order()
+    public function getHomeOrder()
     {
         return $this->home_order;
     }
 
-      /**
-    * Set the value of home_order
-    *
-    * @return self
-    */ 
-    public function setHome_order($home_order)
+    public function setHomeOrder($home_order)
     {
         $this->home_order = $home_order;
+        return $this;
     }
 }

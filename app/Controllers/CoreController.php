@@ -2,41 +2,36 @@
 
 namespace App\Controllers;
 
-use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Product;
-use App\Models\Type;
 
-class CoreController 
+class CoreController
 {
     /**
-     * Fonction qui permet d'afficher la vue
-     * $viewData = les données que je veux récupérer dans ma vue
+     * Fonction qui permet d'afficher une vue
+     *
+     * @param string $viewName Nom de la vue à afficher (ex: 'home')
+     * @param array $viewData Données à transmettre à la vue
      */
     public function show($viewName, $viewData = [])
     {
+        // L'URL absolue du site, définie par BASE_URI dans le .htaccess
         $absoluteURL = $_SERVER['BASE_URI'];
+
+        // Variable globale pour accéder au router dans les vues
         global $router;
-        // $typeModel = new Type();
-        // $types = $typeModel->findAll();
 
-        // // Ci dessous on va créer un tableau qui sera ue "copie" de $types (liste des types)
-        // // Grace a ce tableau on pourra piocher facilement dans les types de produits
-        // // Par ex, si on veut afficher le type 7 on afficher le $type[7]
-        // // Pour faire simple dans ce tableau, les index seront = aux id
-        // foreach($types as $elem) {
-        //     $typeListById[$elem->getId()] = $elem;
-        // }
-        // dump($typeListById);
-        // Ci dessous je créer une instance du model Category
+        // Charger toutes les catégories pour le menu (ou autres besoins globaux)
         $categoryModel = new Category();
-        // Ci dessous j'execute la methode findAll pour récupérer toutes les categories depuis la bdd
         $categories = $categoryModel->findAll();
-        // dump($categories);
-        // $brandModel = new Brand();
-        // // Ci dessous j'execute la methode findAll pour récupérer toutes les categories depuis la bdd
-        // $brands = $brandModel->findAll();
 
+        // Transformation des catégories (si nécessaire)
+        // Exemple : créer une liste associative si besoin
+        $categoriesById = [];
+        foreach ($categories as $category) {
+            $categoriesById[$category->getId()] = $category;
+        }
+
+        // Inclusion des fichiers de vue (header, contenu principal, footer)
         require_once __DIR__ . "/../views/partials/header.tpl.php";
         require_once __DIR__ . "/../views/$viewName.tpl.php";
         require_once __DIR__ . "/../views/partials/footer.tpl.php";
